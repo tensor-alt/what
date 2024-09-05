@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>It is what it is</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2s;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        #message a {
+            color: #00ffff;
+            text-decoration: none;
+        }
+        
+        #message a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div id="message"></div>
+
+    <script>
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        const messageEl = document.getElementById('message');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const stars = [];
+        const constellations = [];
+        const messages = [
+            "it is what it is, <a href='https://en.wikipedia.org/wiki/It_Is_What_It_Is' target='_blank'>learn more</a>",
+            
+            "it is what it is",
+        "it is what it is",
+            "the cards are dealt",
+            "embrace the absurd",
+            "we are all made of stardust",
+            "existence precedes essence",
+            "there is no spoon",
+            "the dance of entropy",
+            "perception shapes reality",
+            "nothing ever happens",
+    " a never-ending torrent of ideas",
+    " connected in unexpected ways",
+    "threads that weave tapestries",
+    "fleeting whispers in the winds of thought.",
+    " maze of mirrors",
+        ];
+
+        class Star {
+            constructor(x, y, radius, speed) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.speed = speed;
+                this.saturation = Math.random() * 100;
+                this.alpha = Math.random();
+                this.alphaSpeed = 0.005 + Math.random() * 0.01;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(220, ${this.saturation}%, 80%, ${this.alpha})`;
+                ctx.fill();
+            }
+
+            update() {
+                this.y += this.speed;
+                if (this.y > height) {
+                    this.y = 0;
+                }
+                this.alpha += this.alphaSpeed;
+                if (this.alpha > 1 || this.alpha < 0) {
+                    this.alphaSpeed = -this.alphaSpeed;
+                }
+                this.draw();
+            }
+        }
+
+        const constellationShapes = {
+            star: [
+                {x: 0, y: -50}, {x: 14, y: -20}, {x: 47, y: -15}, 
+                {x: 23, y: 7}, {x: 29, y: 40}, {x: 0, y: 25}, 
+                {x: -29, y: 40}, {x: -23, y: 7}, {x: -47, y: -15}, 
+                {x: -14, y: -20}
+            ],
+            circle: Array.from({length: 12}, (_, i) => ({
+                x: Math.cos(i * Math.PI / 6) * 40,
+                y: Math.sin(i * Math.PI / 6) * 40
+            })),
+            triangle: [
+                {x: 0, y: -40}, {x: -35, y: 30}, {x: 35, y: 30}
+            ],
+            unicorn: [
+                {x: -20, y: 0}, {x: 0, y: -40}, {x: 20, y: 0},
+                {x: 0, y: 40}, {x: -20, y: 0}, {x: -10, y: -20},
+                {x: 10, y: -20}, {x: 20, y: 0}
+            ]
+        };
+
+        function createStars() {
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const radius = Math.random() * 1.5;
+                const speed = 0.05 + Math.random() * 0.2;
+                stars.push(new Star(x, y, radius, speed));
+            }
+        }
+
+        function createConstellations() {
+            constellations.length = 0;
+            const shapes = Object.keys(constellationShapes);
+            
+            // Add predefined shapes
+            shapes.forEach(shape => {
+                const centerX = Math.random() * width;
+                const centerY = Math.random() * height;
+                const constellation = constellationShapes[shape].map(point => ({
+                    x: point.x + centerX,
+                    y: point.y + centerY
+                }));
+                constellations.push({points: constellation, flashCount: 0, color: getRandomColor()});
+            });
+            
+            // Add some random constellations
+            for (let i = 0; i < 3; i++) {
+                const constellation = [];
+                for (let j = 0; j < 5; j++) {
+                    constellation.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height
+                    });
+                }
+                constellations.push({points: constellation, flashCount: 0, color: getRandomColor()});
+            }
+        }
+
+        function getRandomColor() {
+            return `hsl(${Math.random() * 360}, 70%, 70%)`;
+        }
+
+        function drawBackground() {
+            const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width);
+            gradient.addColorStop(0, 'rgba(10, 10, 30, 0.8)');
+            gradient.addColorStop(1, 'rgba(0, 0, 10, 1)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function drawConstellations() {
+            constellations.forEach(constellation => {
+                if (constellation.flashCount > 0) {
+                    ctx.strokeStyle = constellation.flashCount % 2 === 0 ? constellation.color : 'rgba(255, 255, 255, 0.2)';
+                    ctx.lineWidth = constellation.flashCount % 2 === 0 ? 2 : 0.5;
+                    constellation.flashCount--;
+                } else {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.lineWidth = 0.5;
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(constellation.points[0].x, constellation.points[0].y);
+                for (let i = 1; i < constellation.points.length; i++) {
+                    ctx.lineTo(constellation.points[i].x, constellation.points[i].y);
+                }
+                if (constellation.points.length > 2) {
+                    ctx.closePath();
+                }
+                ctx.stroke();
+
+                // Draw points
+                ctx.fillStyle = constellation.color;
+                constellation.points.forEach(point => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            drawBackground();
+            stars.forEach(star => star.update());
+            drawConstellations();
+
+            if (Math.random() < 0.005) {
+                const constellation = constellations[Math.floor(Math.random() * constellations.length)];
+                constellation.flashCount = 10;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        let currentMessageIndex = 0;
+        function displayMessage() {
+            messageEl.style.opacity = 0;
+            setTimeout(() => {
+                messageEl.innerHTML = messages[currentMessageIndex];
+                messageEl.style.opacity = 1;
+            }, 1000);
+            currentMessageIndex = (currentMessageIndex + 1) % messages.length;
+            setTimeout(displayMessage, 8000);
+        }
+
+        function handleResize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            stars.length = 0;
+            createStars();
+            createConstellations();
+        }
+
+        createStars();
+        createConstellations();
+        animate();
+        displayMessage();
+        window.addEventListener('resize', handleResize);
+    </script>
+</body>
+<
