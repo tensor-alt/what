@@ -31,7 +31,7 @@
             font-size: 2rem;
             text-align: center;
             opacity: 0;
-            transition: opacity 2s;
+            transition: opacity 2s, transform 0.5s;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
         
@@ -54,15 +54,10 @@
         const ctx = canvas.getContext('2d');
         const messageEl = document.getElementById('message');
 
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-
-        const stars = [];
-        const constellations = [];
+        let width, height;
+        const stars = [], constellations = [];
         const messages = [
             "it is what it is, <a href='https://en.wikipedia.org/wiki/It_Is_What_It_Is' target='_blank'>learn more</a>",
-            <!-- it will be here-->
-            "it is what it is",
             "it is what it is",
             "the cards are dealt",
             "embrace the absurd",
@@ -70,13 +65,37 @@
             "existence precedes essence",
             "there is no spoon",
             "the dance of entropy",
-            "perception shapes reality",
             "nothing ever happens",
-            " a never-ending torrent of ideas",
-            " connected in unexpected ways",
+            "a never-ending torrent of ideas",
             "threads that weave tapestries",
-            "fleeting whispers in the winds of thought.",
-            " maze of mirrors",
+            "CA     ",
+            "ʕ•ᴥ•ʔ",
+
+            "><(((('>",
+
+            "=^.^=",
+
+            "¯\_(ツ)_/¯",
+
+            "¯\_(ツ)_/¯",
+            "♥",
+
+            "¯\_(ツ)_/¯",
+
+            "♥",
+            <!-- \o/ -->
+
+            "♥",
+            <!--  -->
+            <!-- //edit here -->
+
+            "we are the stories we tell ourselves!",
+            "truth, a kaleidoscope of perspectives",
+            "dancing on the edge of the unknown",
+            "impermanence",
+            "splendor in the mundane absurdity",
+            "a renaissance of the grotesque and the sublime",
+
         ];
 
         class Star {
@@ -99,78 +118,49 @@
 
             update() {
                 this.y += this.speed;
-                if (this.y > height) {
-                    this.y = 0;
-                }
+                if (this.y > height) this.y = 0;
                 this.alpha += this.alphaSpeed;
-                if (this.alpha > 1 || this.alpha < 0) {
-                    this.alphaSpeed = -this.alphaSpeed;
-                }
+                if (this.alpha > 1 || this.alpha < 0) this.alphaSpeed = -this.alphaSpeed;
                 this.draw();
             }
         }
 
         const constellationShapes = {
-            star: [
-                {x: 0, y: -50}, {x: 14, y: -20}, {x: 47, y: -15}, 
-                {x: 23, y: 7}, {x: 29, y: 40}, {x: 0, y: 25}, 
-                {x: -29, y: 40}, {x: -23, y: 7}, {x: -47, y: -15}, 
-                {x: -14, y: -20}
-            ],
-            circle: Array.from({length: 12}, (_, i) => ({
-                x: Math.cos(i * Math.PI / 6) * 40,
-                y: Math.sin(i * Math.PI / 6) * 40
-            })),
-            triangle: [
-                {x: 0, y: -40}, {x: -35, y: 30}, {x: 35, y: 30}
-            ],
-            unicorn: [
-                {x: -20, y: 0}, {x: 0, y: -40}, {x: 20, y: 0},
-                {x: 0, y: 40}, {x: -20, y: 0}, {x: -10, y: -20},
-                {x: 10, y: -20}, {x: 20, y: 0}
-            ]
+            star: [...Array(10)].map((_, i) => ({x: Math.sin(i * 0.628) * 50, y: Math.cos(i * 0.628) * 50 - 50})),
+            circle: [...Array(12)].map((_, i) => ({x: Math.cos(i * Math.PI / 6) * 40, y: Math.sin(i * Math.PI / 6) * 40})),
+            triangle: [{x: 0, y: -40}, {x: -35, y: 30}, {x: 35, y: 30}],
+            unicorn: [{x: -20, y: 0}, {x: 0, y: -40}, {x: 20, y: 0}, {x: 0, y: 40}, {x: -20, y: 0}, {x: -10, y: -20}, {x: 10, y: -20}, {x: 20, y: 0}]
         };
 
+        function setupCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
         function createStars() {
+            stars.length = 0; // Clear existing stars
             for (let i = 0; i < 200; i++) {
-                const x = Math.random() * width;
-                const y = Math.random() * height;
-                const radius = Math.random() * 1.5;
-                const speed = 0.05 + Math.random() * 0.2;
-                stars.push(new Star(x, y, radius, speed));
+                stars.push(new Star(Math.random() * width, Math.random() * height, Math.random() * 1.5, 0.05 + Math.random() * 0.2));
             }
         }
 
         function createConstellations() {
-            constellations.length = 0;
-            const shapes = Object.keys(constellationShapes);
-            
-            // Add predefined shapes
-            shapes.forEach(shape => {
-                const centerX = Math.random() * width;
-                const centerY = Math.random() * height;
-                const constellation = constellationShapes[shape].map(point => ({
-                    x: point.x + centerX,
-                    y: point.y + centerY
-                }));
-                constellations.push({points: constellation, flashCount: 0, color: getRandomColor()});
+            constellations.length = 0; // Clear existing constellations
+            Object.keys(constellationShapes).forEach(shape => {
+                const center = {x: Math.random() * width, y: Math.random() * height};
+                constellations.push({
+                    points: constellationShapes[shape].map(p => ({x: p.x + center.x, y: p.y + center.y})),
+                    flashCount: 0,
+                    color: `hsl(${Math.random() * 360}, 70%, 70%)`
+                });
             });
-            
-            // Add some random constellations
             for (let i = 0; i < 3; i++) {
-                const constellation = [];
-                for (let j = 0; j < 5; j++) {
-                    constellation.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height
-                    });
-                }
-                constellations.push({points: constellation, flashCount: 0, color: getRandomColor()});
+                constellations.push({
+                    points: [...Array(5)].map(() => ({x: Math.random() * width, y: Math.random() * height})),
+                    flashCount: 0,
+                    color: `hsl(${Math.random() * 360}, 70%, 70%)`
+                });
             }
-        }
-
-        function getRandomColor() {
-            return `hsl(${Math.random() * 360}, 70%, 70%)`;
         }
 
         function drawBackground() {
@@ -182,74 +172,105 @@
         }
 
         function drawConstellations() {
-            constellations.forEach(constellation => {
-                if (constellation.flashCount > 0) {
-                    ctx.strokeStyle = constellation.flashCount % 2 === 0 ? constellation.color : 'rgba(255, 255, 255, 0.2)';
-                    ctx.lineWidth = constellation.flashCount % 2 === 0 ? 2 : 0.5;
-                    constellation.flashCount--;
-                } else {
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-                    ctx.lineWidth = 0.5;
-                }
-
+            constellations.forEach(c => {
+                ctx.strokeStyle = c.flashCount > 0 ? (c.flashCount % 2 ? c.color : 'rgba(255, 255, 255, 0.2)') : 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = c.flashCount > 0 ? (c.flashCount % 2 ? 2 : 0.5) : 0.5;
+                if (c.flashCount > 0) c.flashCount--;
                 ctx.beginPath();
-                ctx.moveTo(constellation.points[0].x, constellation.points[0].y);
-                for (let i = 1; i < constellation.points.length; i++) {
-                    ctx.lineTo(constellation.points[i].x, constellation.points[i].y);
-                }
-                if (constellation.points.length > 2) {
-                    ctx.closePath();
-                }
+                ctx.moveTo(c.points[0].x, c.points[0].y);
+                c.points.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+                if (c.points.length > 2) ctx.closePath();
                 ctx.stroke();
-
-                // Draw points
-                ctx.fillStyle = constellation.color;
-                constellation.points.forEach(point => {
-                    ctx.beginPath();
-                    ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                });
+                ctx.fillStyle = c.color;
+                c.points.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); });
             });
         }
-
+       
         function animate() {
             ctx.clearRect(0, 0, width, height);
             drawBackground();
             stars.forEach(star => star.update());
             drawConstellations();
-
-            if (Math.random() < 0.005) {
-                const constellation = constellations[Math.floor(Math.random() * constellations.length)];
-                constellation.flashCount = 10;
-            }
-
+            if (Math.random() < 0.005) constellations[Math.floor(Math.random() * constellations.length)].flashCount = 10;
             requestAnimationFrame(animate);
         }
 
         let currentMessageIndex = 0;
+        let messageTimer;
+        let flickerTimer;
+        let isLink = false;
+        let rapidSequence = false;
+
         function displayMessage() {
+            clearTimeout(messageTimer);
+            clearInterval(flickerTimer);
+
+            if (rapidSequence && Math.random() < 0.3) {
+                rapidSequence = false;
+            } else if (!rapidSequence && Math.random() < 0.1) {
+                rapidSequence = true;
+                rapidMessageSequence();
+                return;
+            }
+
+            const message = messages[currentMessageIndex];
+            const duration = message.includes('href') ? 8000 : 5000; 
+            const shouldFlicker = !isLink && Math.random() > 0.5;
+
             messageEl.style.opacity = 0;
             setTimeout(() => {
-                messageEl.innerHTML = messages[currentMessageIndex];
+                messageEl.innerHTML = message;
+                isLink = message.includes('href');
                 messageEl.style.opacity = 1;
+                messageEl.style.transform = `translate(-50%, -50%) translate(${Math.random() * 2 - 1}%, ${Math.random() * 2 - 1}%)`;
             }, 1000);
+
             currentMessageIndex = (currentMessageIndex + 1) % messages.length;
-            setTimeout(displayMessage, 8000);
+            messageTimer = setTimeout(displayMessage, duration);
+
+            if (shouldFlicker && !isLink) {
+                flickerTimer = setInterval(() => {
+                    if (Math.random() > 0.2) { 
+                        messageEl.style.opacity = Math.random() > 0.5 ? '0.1' : '1';
+                    }
+                }, 100); 
+                setTimeout(() => {
+                    clearInterval(flickerTimer);
+                    messageEl.style.opacity = '1'; 
+                }, duration - 1000); 
+            }
         }
 
-        function handleResize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            stars.length = 0;
-            createStars();
-            createConstellations();
+        function rapidMessageSequence() {
+            const rapidMessages = 5;
+            let count = 0;
+            function showRapidMessage() {
+                if (count < rapidMessages) {
+                    messageEl.innerHTML = messages[Math.floor(Math.random() * messages.length)];
+                    messageEl.style.opacity = '1';
+                    setTimeout(() => {
+                        messageEl.style.opacity = '0';
+                        count++;
+                        setTimeout(showRapidMessage, 50); 
+                    }, 300);
+                } else {
+                    setTimeout(displayMessage, 1000);
+                }
+            }
+            showRapidMessage();
         }
 
+        setupCanvas();
         createStars();
         createConstellations();
         animate();
         displayMessage();
-        window.addEventListener('resize', handleResize);
+
+        window.addEventListener('resize', () => {
+            setupCanvas();
+            createConstellations(); 
+            createStars(); // Recreate stars on resize
+        });
     </script>
 </body>
 <
